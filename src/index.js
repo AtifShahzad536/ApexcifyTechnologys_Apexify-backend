@@ -33,7 +33,7 @@ app.use(cors({
         'http://localhost:5174',
         'http://localhost:5175',
         'http://localhost:5176',
-        'https://apexify-pk.vercel.app/',
+        'https://apexify-pk.vercel.app',
         process.env.CLIENT_URL || 'http://localhost:5173'
     ],
     credentials: true

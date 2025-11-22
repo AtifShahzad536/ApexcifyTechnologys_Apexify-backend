@@ -4,10 +4,20 @@ import Order from '../models/Order.js';
 
 dotenv.config();
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+let stripe;
+const getStripe = () => {
+    if (!stripe) {
+        if (!process.env.STRIPE_SECRET_KEY) {
+            throw new Error('Stripe secret key is missing in environment variables');
+        }
+        stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+    }
+    return stripe;
+};
 
 export const createCheckoutSession = async (req, res) => {
     try {
+        const stripeInstance = getStripe();
         const { orderId } = req.body;
 
         const order = await Order.findById(orderId).populate('items.product');
@@ -27,7 +37,7 @@ export const createCheckoutSession = async (req, res) => {
             quantity: item.quantity,
         }));
 
-        const session = await stripe.checkout.sessions.create({
+        const session = await stripeInstance.checkout.sessions.create({
             payment_method_types: ['card'],
             line_items,
             mode: 'payment',
@@ -42,14 +52,15 @@ export const createCheckoutSession = async (req, res) => {
         res.json({ id: session.id, url: session.url });
     } catch (error) {
         console.error('Stripe error:', error);
-        res.status(500).json({ message: 'Failed to create checkout session' });
+        res.status(500).json({ message: error.message || 'Failed to create checkout session' });
     }
 };
 
 export const handlePaymentSuccess = async (req, res) => {
     try {
+        const stripeInstance = getStripe();
         const { session_id, order_id } = req.body;
-        const session = await stripe.checkout.sessions.retrieve(session_id);
+        const session = await stripeInstance.checkout.sessions.retrieve(session_id);
 
         if (session.payment_status === 'paid') {
             const order = await Order.findById(order_id);
@@ -70,6 +81,6 @@ export const handlePaymentSuccess = async (req, res) => {
         }
     } catch (error) {
         console.error('Payment success error:', error);
-        res.status(500).json({ message: 'Failed to verify payment' });
+        res.status(500).json({ message: error.message || 'Failed to verify payment' });
     }
 };

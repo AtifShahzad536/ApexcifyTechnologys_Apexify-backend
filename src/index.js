@@ -14,6 +14,7 @@ import couponRoutes from './routes/coupons.js';
 import wishlistRoutes from './routes/wishlist.js';
 import popupAdRoutes from './routes/popupAds.js';
 import uploadRoutes from './routes/upload.js';
+import paymentRoutes from './routes/payment.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -66,6 +67,7 @@ app.use('/api/coupons', couponRoutes);
 app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/popup-ads', popupAdRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/payment', paymentRoutes);
 
 // 404 handler
 app.use((req, res) => {
